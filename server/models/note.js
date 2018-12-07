@@ -3,8 +3,7 @@ const Schema = mongoose.Schema;
 
 const noteSchema = new Schema({
   title: String,
-  category: String,
-  userId: String,
+  padId: String,
 })
 
 module.exports = mongoose.model('Note', noteSchema);

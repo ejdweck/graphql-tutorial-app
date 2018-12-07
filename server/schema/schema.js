@@ -1,6 +1,6 @@
 const graphql = require('graphql');
 const _ = require('lodash');
-const User = require('../models/user');
+const Pad = require('../models/pad');
 const Note = require('../models/note');
 
 // grab these functions from this package
@@ -14,16 +14,15 @@ const {
   GraphQLNonNull,
 } = graphql;
 
-const UserType = new GraphQLObjectType({
-  name: 'User',
+const PadType = new GraphQLObjectType({
+  name: 'Pad',
   fields: () => ({
     id: { type: GraphQLID },
     name: { type: GraphQLString },
-    age: { type: GraphQLInt },
     notes: {
       type: new GraphQLList(NoteType),
       resolve(parent, args) {
-        return Note.find({ userId: parent.id })
+        return Note.find({ padId: parent.id })
       }
     }
   })
@@ -34,11 +33,11 @@ const NoteType = new GraphQLObjectType({
   fields: () => ({
     id: { type: GraphQLID },
     title: { type: GraphQLString },
-    category: { type: GraphQLString },
-    user: {
-      type: UserType,
+    //category: { type: GraphQLString },
+    pad: {
+      type: PadType,
       resolve(parent, args) {
-        return User.findById(parent.userId)
+        return Pad.findById(parent.padId)
       }
     }
   })
@@ -54,11 +53,11 @@ const RootQuery = new GraphQLObjectType({
         return Note.findById(args.id);
       }
     },
-    user: {
-      type: UserType,
+    pad: {
+      type: PadType,
       args: { id: { type: GraphQLID } },
       resolve(parent, args) {
-        return User.findById(args.id);
+        return Pad.findById(args.id);
       }
     },
     notes: {
@@ -67,10 +66,10 @@ const RootQuery = new GraphQLObjectType({
         return Note.find({});
       }
     },
-    users: {
-      type: new GraphQLList(UserType),
+    pads: {
+      type: new GraphQLList(PadType),
       resolve(parent, args) {
-        return User.find({});
+        return Pad.find({});
       }
     }
   }
@@ -79,32 +78,29 @@ const RootQuery = new GraphQLObjectType({
 const Mutation = new GraphQLObjectType({
   name:'Mutation',
   fields: {
-    addUser: {
-      type: UserType,
+    addPad: {
+      type: PadType,
       args: {
         name: { type: new GraphQLNonNull(GraphQLString) },
-        age: { type: new GraphQLNonNull(GraphQLInt) },
       },
       resolve(parent, args) {
-        let user = new User({
+        let pad = new Pad({
           name: args.name,
-          age: args.age,
         })
-        return user.save();
+        return pad.save();
       }
     },
     addNote: {
       type: NoteType,
       args: {
         title: { type: new GraphQLNonNull(GraphQLString) },
-        category: { type: new GraphQLNonNull(GraphQLString) },
-        userId: { type: new GraphQLNonNull(GraphQLID) }
+        padId: { type: new GraphQLNonNull(GraphQLID) }
       },
       resolve(parent, args) {
         let note = new Note({
           title: args.title,
           category: args.category,
-          userId: args.userId,
+          padId: args.padId,
         })
         return note.save();
       }
