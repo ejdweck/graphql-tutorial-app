@@ -6,4 +6,4 @@ const userSchema = new Schema({
   age: Number,
 })
 
-module.exports = mongoose.model('Note', noteSchema);
+module.exports = mongoose.model('User', userSchema);
