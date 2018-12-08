@@ -4,7 +4,7 @@ import { ApolloProvider } from 'react-apollo';
 //css
 import './App.css';
 //components
-import NoteList from './components/NoteList';
+import PadList from './components/PadList';
 
 // apollo setup
 const client = new ApolloClient({
@@ -16,8 +16,8 @@ class App extends Component {
     return (
       <ApolloProvider client={client}>
         <div className="App">
-          <h1>This the NoteBook - listen up</h1>
-          <NoteList />
+          <h1>This the NoteBook - Listen up</h1>
+          <PadList />
         </div>
       </ApolloProvider>
     );
