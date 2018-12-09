@@ -2,6 +2,7 @@ const graphql = require('graphql');
 const _ = require('lodash');
 const Pad = require('../models/pad');
 const Note = require('../models/note');
+const User = require('../models/user');
 
 // grab these functions from this package
 const { 
@@ -14,11 +15,31 @@ const {
   GraphQLNonNull,
 } = graphql;
 
+const UserType = new GraphQLObjectType({
+  name: 'User',
+  fields: () => ({
+    id: { type: GraphQLID },
+    name: { type: GraphQLString },
+    pads: {
+      type: new GraphQLList(PadType),
+      resolve(parent, args) {
+        return Pad.find({ userId: parent.id })
+      }
+    }
+  })
+});
+
 const PadType = new GraphQLObjectType({
   name: 'Pad',
   fields: () => ({
     id: { type: GraphQLID },
     name: { type: GraphQLString },
+    user: {
+      type: UserType,
+      resolve(parent, args) {
+        return User.findById(parent.userId)
+      }
+    },
     notes: {
       type: new GraphQLList(NoteType),
       resolve(parent, args) {
@@ -71,6 +92,20 @@ const RootQuery = new GraphQLObjectType({
       resolve(parent, args) {
         return Pad.find({});
       }
+    },
+    user: {
+      type: UserType,
+      args: { id: { type: GraphQLID } },
+      resolve(parent, args) {
+        return User.findById(args.id);
+      }
+    },
+    users: {
+      type: new GraphQLList(UserType),
+      args: { id: { type: GraphQLID } },
+      resolve(parent, args) {
+        return User.find({});
+      }
     }
   }
 });
@@ -82,6 +117,7 @@ const Mutation = new GraphQLObjectType({
       type: PadType,
       args: {
         name: { type: new GraphQLNonNull(GraphQLString) },
+        userId: { type: new GraphQLNonNull(GraphQLID) }
       },
       resolve(parent, args) {
         let pad = new Pad({
@@ -103,6 +139,18 @@ const Mutation = new GraphQLObjectType({
           padId: args.padId,
         })
         return note.save();
+      }
+    },
+    addUser: {
+      type: UserType,
+      args: {
+        name: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      resolve(parent, args) {
+        let user = new User({
+          name: args.name,
+        })
+        return user.save();
       }
     }
   }

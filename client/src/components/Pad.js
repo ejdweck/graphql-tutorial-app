@@ -11,9 +11,16 @@ class Pad extends Component {
   }
 
   render() {
+    console.log(this.props.notes)
+    let notes = this.props.notes.map(note => {
+      return (
+        <p key={note.id}>{note.title}</p>
+      );
+    });
     return (
       <div className="pad-body">
         <h3>{this.props.pad.name}</h3>
+        {notes}
       </div>
     );
   }

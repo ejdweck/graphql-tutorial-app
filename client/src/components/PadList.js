@@ -23,7 +23,7 @@ class PadList extends Component {
   constructor(props) {
     super(props);
     this.state = {
-
+      layout: null,
     };
   }
 
@@ -46,27 +46,41 @@ class PadList extends Component {
     console.log('layout change', layout);
   }
 
+  generateStartingLayout = () => {
+    let layout = [];
+    let x = 0;
+    this.props.data.pads.map(pad => {
+      let key = pad.name
+      let obj = {i: key, x: x, y: 0, w: 3, h: 5, minW: 2, minH: 4};
+      if (x+3 >= 12) {
+        x = 0;
+      } else {
+        x += 3;
+      }
+      return layout.push(obj);
+    });
+    this.setState({layout: layout})
+  }
+      
   render() {
-    //console.log(this.props.data.notes)
-    var layout = [
-      {i: 'work', x: 0, y: 0, w: 3, h: 4, minW: 2, minH: 4},
-      {i: 'school', x: 3, y: 0, w: 3, h: 4, minW: 2, minH: 4},
-      {i: 'buy', x: 6, y: 0, w: 3, h: 4, minW: 2, minH: 4},
-      {i: 'home', x: 9, y: 0, w: 3, h: 4, minW: 2, minH: 4},
-      {i: 'fun', x: 0, y: 3, w: 3, h: 4, minW: 2, minH: 4},
-    ];
-    let data = this.props.data
+    let data = this.props.data;
+    console.log(this.props.data)
+    
     let pads;
     if (data.loading) {
       return (<div>Loading notes!</div>);
     } else {
+      // only want to call this if layout is null and there is no previous layout saved
+      if (this.state.layout == null) {
+        this.generateStartingLayout();
+      }
       pads = this.props.data.pads.map(pad => {
         return (
           <div 
             className="pad"
             key={pad.name}
             >
-            <Pad pad={pad}/>
+            <Pad pad={pad} notes={pad.notes}/>
           </div>
         )
       });
@@ -75,12 +89,13 @@ class PadList extends Component {
     return (
       <div>
         <GridLayout 
+          style={{backgroundColor: 'white'}}
           className="layout"
           cols={12}
-          rowHeight={30}
+          rowHeight={40}
           width={1200}
-          layout={layout}
           onLayoutChange={this.layoutChange}
+          layout={this.state.layout}
           >
           {pads} 
         </GridLayout>
