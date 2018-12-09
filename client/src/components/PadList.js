@@ -1,29 +1,21 @@
 import React, { Component } from 'react';
-import { gql } from 'apollo-boost';
-import { graphql } from 'react-apollo';
+import { graphql, compose } from 'react-apollo';
 import Pad from './Pad';
 import GridLayout from 'react-grid-layout';
 
 import '../../node_modules/react-grid-layout/css/styles.css';
 import '../../node_modules/react-resizable/css/styles.css';
 
-const getPadsWithNotesQuery = gql`
-  {
-    pads {
-      id,
-      name,
-      notes {
-        title
-        id
-      }
-    }
-  }
-`
+import { getPadsWithNotesQuery, addPadMutation } from '../queries/queries';
+import { Button } from 'react-bootstrap';
+
+
 class PadList extends Component {
   constructor(props) {
     super(props);
     this.state = {
       layout: null,
+      input: "",
     };
   }
 
@@ -49,7 +41,7 @@ class PadList extends Component {
   generateStartingLayout = () => {
     let layout = [];
     let x = 0;
-    this.props.data.pads.map(pad => {
+    this.props.getPadsWithNotesQuery.pads.map(pad => {
       let key = pad.name
       let obj = {i: key, x: x, y: 0, w: 3, h: 5, minW: 2, minH: 4};
       if (x+3 >= 12) {
@@ -61,9 +53,23 @@ class PadList extends Component {
     });
     this.setState({layout: layout})
   }
+  
+  handleChange = (event) => {
+    this.setState({input: event.target.value});
+  }
+
+  onClick= () => {
+    console.log("CLICKED", this.state.input)
+    this.props.addPadMutation({
+      variables: {
+        name: this.state.input,
+        userId: "5c0c54c2aa19b11fc4660ab8"
+      }
+    })
+  }
       
   render() {
-    let data = this.props.data;
+    let data = this.props.getPadsWithNotesQuery;
     console.log(this.props.data)
     
     let pads;
@@ -74,7 +80,7 @@ class PadList extends Component {
       if (this.state.layout == null) {
         this.generateStartingLayout();
       }
-      pads = this.props.data.pads.map(pad => {
+      pads = this.props.getPadsWithNotesQuery.pads.map(pad => {
         return (
           <div 
             className="pad"
@@ -88,6 +94,8 @@ class PadList extends Component {
     
     return (
       <div>
+        <input type="text" value={this.state.input} onChange={this.handleChange} />
+        <Button onClick={this.onClick}>Default</Button>
         <GridLayout 
           style={{backgroundColor: 'white'}}
           className="layout"
@@ -104,4 +112,7 @@ class PadList extends Component {
   }
 }
 
-export default graphql(getPadsWithNotesQuery)(PadList);
+export default compose (
+  graphql(getPadsWithNotesQuery, {name: "getPadsWithNotesQuery"}),
+  graphql(addPadMutation, {name: "addPadMutation"}),
+)(PadList);
