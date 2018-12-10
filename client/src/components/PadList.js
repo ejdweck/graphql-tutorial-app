@@ -6,7 +6,13 @@ import GridLayout from 'react-grid-layout';
 import '../../node_modules/react-grid-layout/css/styles.css';
 import '../../node_modules/react-resizable/css/styles.css';
 
-import { getPadsWithNotesQuery, addPadMutation } from '../queries/queries';
+import {
+  getPadsWithNotesQuery,
+  addPadMutation,
+  getUser,
+  updateUserLayoutMutation,
+  getCurrentLayout
+} from '../queries/queries';
 import { Button } from 'react-bootstrap';
 
 
@@ -14,9 +20,27 @@ class PadList extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      layout: null,
+      layout: "",
       input: "",
     };
+  }
+
+  getCurrentLayout = () => {
+    console.log('in layout get curr')
+    let layout = this.props.getCurrentLayout
+    console.log(layout.users)
+    console.log(layout.users[0].layout)
+    let layoutJSON = JSON.parse(layout.users[0].layout);
+    // this is SO hacked.  Basically we only want to set
+    // the layout state of our app through this method on
+    // startup.  Else, if the layout changes after the first
+    // page load, layoutChange() is called and the database 
+    // is written too and local state is also tracked.
+    if (this.state.layout == "") {
+      this.setState({
+        layout: layoutJSON,
+      })
+    }
   }
 
   displayPads = () => {
@@ -36,6 +60,16 @@ class PadList extends Component {
 
   layoutChange = (layout) => {
     console.log('layout change', layout);
+    this.setState({layout: layout}, ()=>{
+      let layout = JSON.stringify(this.state.layout);
+      console.log('laaaaaaayout', layout)
+      this.props.updateUserLayout({
+        variables: {
+          userId: "5c0db0b3a83e5b37f0ecd869",
+          layout: layout 
+        }
+      })
+    })
   }
 
   generateStartingLayout = () => {
@@ -58,8 +92,7 @@ class PadList extends Component {
     this.setState({input: event.target.value});
   }
 
-  onClick= () => {
-    console.log("CLICKED", this.state.input)
+  onClick= (e) => {
     this.props.addPadMutation({
       variables: {
         name: this.state.input,
@@ -70,15 +103,17 @@ class PadList extends Component {
       
   render() {
     let data = this.props.getPadsWithNotesQuery;
-    console.log(this.props.data)
-    
     let pads;
     if (data.loading) {
       return (<div>Loading notes!</div>);
     } else {
       // only want to call this if layout is null and there is no previous layout saved
       if (this.state.layout == null) {
+        let layoutData = this.props.getUser.layout;
         this.generateStartingLayout();
+      } else {
+        // get layout from database
+        this.getCurrentLayout();
       }
       pads = this.props.getPadsWithNotesQuery.pads.map(pad => {
         return (
@@ -115,4 +150,7 @@ class PadList extends Component {
 export default compose (
   graphql(getPadsWithNotesQuery, {name: "getPadsWithNotesQuery"}),
   graphql(addPadMutation, {name: "addPadMutation"}),
+  graphql(getUser, {name: "getUser"}),
+  graphql(updateUserLayoutMutation, {name: "updateUserLayout"}),
+  graphql(getCurrentLayout, {name: "getCurrentLayout"}),
 )(PadList);
