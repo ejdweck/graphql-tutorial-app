@@ -20,6 +20,7 @@ const UserType = new GraphQLObjectType({
   fields: () => ({
     id: { type: GraphQLID },
     name: { type: GraphQLString },
+    layout: { type: GraphQLString },
     pads: {
       type: new GraphQLList(PadType),
       resolve(parent, args) {
@@ -149,8 +150,32 @@ const Mutation = new GraphQLObjectType({
       resolve(parent, args) {
         let user = new User({
           name: args.name,
+          layout: null,
         })
         return user.save();
+      }
+    },
+    updateUserLayout: {
+      type: UserType,
+      args: {
+        userId: { type: new GraphQLNonNull(GraphQLID) },
+        layout: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      resolve(parent, args) {
+        return new Promise((resolve, reject) => {
+          const date = Date().toString()
+          User.findOneAndUpdate(
+            {"_id": args.userId},
+            { "$set":{layout: args.layout}},
+            {"new": true} //returns new document
+          ).exec((err, res) => {
+            if(err) {
+              reject(err)
+            } else {
+              resolve(res)
+            }
+          })
+        })
       }
     }
   }
