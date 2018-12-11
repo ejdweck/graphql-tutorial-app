@@ -5,6 +5,7 @@ import GridLayout from 'react-grid-layout';
 
 import '../../node_modules/react-grid-layout/css/styles.css';
 import '../../node_modules/react-resizable/css/styles.css';
+import './PadList.css';
 
 import {
   getPadsWithNotesQuery,
@@ -128,11 +129,12 @@ class PadList extends Component {
     }
     
     return (
-      <div>
+      <div className="container">
         <input type="text" value={this.state.input} onChange={this.handleChange} />
         <Button onClick={this.onClick}>Default</Button>
+
         <GridLayout 
-          style={{backgroundColor: 'white'}}
+          style={{backgroundColor: 'aquamarine'}}
           className="layout"
           cols={12}
           rowHeight={40}
