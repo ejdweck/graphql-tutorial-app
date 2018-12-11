@@ -11,7 +11,7 @@ const getPadsWithNotesQuery = gql`
       }
     }
   }
-`
+`;
 
 const addPadMutation = gql`
   mutation($name: String!, $userId: ID!) {
@@ -23,7 +23,7 @@ const addPadMutation = gql`
       }
     }
   }
-`
+`;
 
 const getUser = gql`
   {
@@ -33,7 +33,7 @@ const getUser = gql`
       layout
     }
   }
-`
+`;
 
 const updateUserLayoutMutation = gql`
   mutation($layout: String!, $userId: ID!) {
@@ -41,14 +41,14 @@ const updateUserLayoutMutation = gql`
       layout
     }
   }
-`
+`;
 const getCurrentLayout = gql`
   {
     users {
       layout
     }
   }
-`
+`;
 export {
   getPadsWithNotesQuery,
   addPadMutation,
