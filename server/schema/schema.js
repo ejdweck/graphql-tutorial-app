@@ -1,16 +1,14 @@
 const graphql = require('graphql');
-const _ = require('lodash');
 const Pad = require('../models/pad');
 const Note = require('../models/note');
 const User = require('../models/user');
 
 // grab these functions from this package
-const { 
+const {
   GraphQLObjectType,
   GraphQLString,
   GraphQLSchema,
   GraphQLID,
-  GraphQLInt,
   GraphQLList,
   GraphQLNonNull,
 } = graphql;
@@ -22,12 +20,14 @@ const UserType = new GraphQLObjectType({
     name: { type: GraphQLString },
     layout: { type: GraphQLString },
     pads: {
+      /* eslint-disable */
       type: new GraphQLList(PadType),
-      resolve(parent, args) {
-        return Pad.find({ userId: parent.id })
-      }
-    }
-  })
+      /* eslint-enable */
+      resolve(parent) {
+        return Pad.find({ userId: parent.id });
+      },
+    },
+  }),
 });
 
 const PadType = new GraphQLObjectType({
@@ -37,17 +37,19 @@ const PadType = new GraphQLObjectType({
     name: { type: GraphQLString },
     user: {
       type: UserType,
-      resolve(parent, args) {
-        return User.findById(parent.userId)
-      }
+      resolve(parent) {
+        return User.findById(parent.userId);
+      },
     },
     notes: {
+      /* eslint-disable */
       type: new GraphQLList(NoteType),
-      resolve(parent, args) {
-        return Note.find({ padId: parent.id })
-      }
-    }
-  })
+      /* eslint-enable */
+      resolve(parent) {
+        return Note.find({ padId: parent.id });
+      },
+    },
+  }),
 });
 
 const NoteType = new GraphQLObjectType({
@@ -55,14 +57,14 @@ const NoteType = new GraphQLObjectType({
   fields: () => ({
     id: { type: GraphQLID },
     title: { type: GraphQLString },
-    //category: { type: GraphQLString },
+    // category: { type: GraphQLString },
     pad: {
       type: PadType,
-      resolve(parent, args) {
-        return Pad.findById(parent.padId)
-      }
-    }
-  })
+      resolve(parent) {
+        return Pad.findById(parent.padId);
+      },
+    },
+  }),
 });
 
 const RootQuery = new GraphQLObjectType({
@@ -73,74 +75,74 @@ const RootQuery = new GraphQLObjectType({
       args: { id: { type: GraphQLID } },
       resolve(parent, args) {
         return Note.findById(args.id);
-      }
+      },
     },
     pad: {
       type: PadType,
       args: { id: { type: GraphQLID } },
       resolve(parent, args) {
         return Pad.findById(args.id);
-      }
+      },
     },
     notes: {
       type: new GraphQLList(NoteType),
-      resolve(parent, args) {
+      resolve() {
         return Note.find({});
-      }
+      },
     },
     pads: {
       type: new GraphQLList(PadType),
-      resolve(parent, args) {
+      resolve() {
         return Pad.find({});
-      }
+      },
     },
     user: {
       type: UserType,
       args: { id: { type: GraphQLID } },
       resolve(parent, args) {
         return User.findById(args.id);
-      }
+      },
     },
     users: {
       type: new GraphQLList(UserType),
       args: { id: { type: GraphQLID } },
-      resolve(parent, args) {
+      resolve() {
         return User.find({});
-      }
-    }
-  }
+      },
+    },
+  },
 });
 
 const Mutation = new GraphQLObjectType({
-  name:'Mutation',
+  name: 'Mutation',
   fields: {
     addPad: {
       type: PadType,
       args: {
         name: { type: new GraphQLNonNull(GraphQLString) },
-        userId: { type: new GraphQLNonNull(GraphQLID) }
+        userId: { type: new GraphQLNonNull(GraphQLID) },
       },
       resolve(parent, args) {
-        let pad = new Pad({
+        const pad = new Pad({
           name: args.name,
-        })
+        });
         return pad.save();
-      }
+      },
     },
     addNote: {
       type: NoteType,
       args: {
         title: { type: new GraphQLNonNull(GraphQLString) },
-        padId: { type: new GraphQLNonNull(GraphQLID) }
+        padId: { type: new GraphQLNonNull(GraphQLID) },
       },
       resolve(parent, args) {
-        let note = new Note({
+        const note = new Note({
           title: args.title,
           category: args.category,
           padId: args.padId,
-        })
+        });
         return note.save();
-      }
+      },
     },
     addUser: {
       type: UserType,
@@ -148,12 +150,12 @@ const Mutation = new GraphQLObjectType({
         name: { type: new GraphQLNonNull(GraphQLString) },
       },
       resolve(parent, args) {
-        let user = new User({
+        const user = new User({
           name: args.name,
           layout: null,
-        })
+        });
         return user.save();
-      }
+      },
     },
     updateUserLayout: {
       type: UserType,
@@ -163,23 +165,22 @@ const Mutation = new GraphQLObjectType({
       },
       resolve(parent, args) {
         return new Promise((resolve, reject) => {
-          const date = Date().toString()
           User.findOneAndUpdate(
-            {"_id": args.userId},
-            { "$set":{layout: args.layout}},
-            {"new": true} //returns new document
+            { _id: args.userId },
+            { $set: { layout: args.layout } },
+            { new: true }, // returns new document
           ).exec((err, res) => {
-            if(err) {
-              reject(err)
+            if (err) {
+              reject(err);
             } else {
-              resolve(res)
+              resolve(res);
             }
-          })
-        })
-      }
-    }
-  }
-})
+          });
+        });
+      },
+    },
+  },
+});
 
 module.exports = new GraphQLSchema({
   query: RootQuery,
