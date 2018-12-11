@@ -37,7 +37,7 @@ class PadList extends Component {
     // startup.  Else, if the layout changes after the first
     // page load, layoutChange() is called and the database 
     // is written too and local state is also tracked.
-    if (this.state.layout == "") {
+    if (this.state.layout === "") {
       this.setState({
         layout: layoutJSON,
       })
@@ -134,7 +134,7 @@ class PadList extends Component {
         <Button onClick={this.onClick}>Default</Button>
 
         <GridLayout 
-          style={{backgroundColor: 'aquamarine'}}
+          style={{backgroundColor: 'white'}}
           className="layout"
           cols={12}
           rowHeight={40}
